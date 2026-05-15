@@ -2,7 +2,7 @@
 // Panel de creación de citas (admin)
 
 import { SVC_MAP, EST_LBL } from '../../logic/admin/config.js';
-import { addCita } from '../../logic/admin/Db.js';
+import { addCita } from '../../logic/admin/db.js';
 import { getHorasDisponibles } from '../../logic/admin/availability.js';
 import { openPanel, closePanel, showToast } from './ui.js';
 
