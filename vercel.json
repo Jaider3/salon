@@ -2,7 +2,7 @@
   "buildCommand": null,
   "outputDirectory": "dist",
   "rewrites": [
-    { "source": "/", "destination": "/pages/UX/index.html" },
-    { "source": "/admin", "destination": "/pages/Admin/index.html" }
+    { "source": "/", "destination": "/pages/ux/index.html" },
+    { "source": "/admin", "destination": "/pages/admin/index.html" }
   ]
 }
