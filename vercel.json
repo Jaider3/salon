@@ -1,4 +1,6 @@
 {
+  "buildCommand": null,
+  "outputDirectory": "dist",
   "rewrites": [
     { "source": "/", "destination": "/pages/UX/index.html" },
     { "source": "/admin", "destination": "/pages/Admin/index.html" }
