@@ -2,7 +2,7 @@
 // Lógica pura para calcular horas disponibles de un estilista
 
 import { state } from './config.js';
-import { loadDisp } from './Db.js';
+import { loadDisp } from './db.js';
 
 export async function getHorasDisponibles(estId, fechaISO, excludeCitaId = null) {
   const disp  = await loadDisp();

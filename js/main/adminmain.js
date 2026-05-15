@@ -1,17 +1,17 @@
 // ── main.js ────────────────────────────────────────────
 // Entry point: importa todos los módulos y expone funciones al scope global
 
-import { state } from '../logic/Admin/config.js';
-import { doLogin, doLogout, autoLogin } from '../logic/Admin/auth.js';
-import { render, renderTable, sortBy } from '../ui/Admin/render.js';
-import { verDetalle, cambiarEstado, cambiarEstilista, eliminarCita } from '../ui/Admin/detail.js';
-import { abrirCrearCita, guardarNuevaCita, onCrearFechaChange } from '../ui/Admin/crear.js';
-import { abrirReagendar, onReagendarFechaChange, guardarReagendamiento } from '../ui/Admin/reagendar.js';
+import { state } from '../logic/admin/config.js';
+import { doLogin, doLogout, autoLogin } from '../logic/admin/auth.js';
+import { render, renderTable, sortBy } from '../ui/admin/render.js';
+import { verDetalle, cambiarEstado, cambiarEstilista, eliminarCita } from '../ui/admin/detail.js';
+import { abrirCrearCita, guardarNuevaCita, onCrearFechaChange } from '../ui/admin/crear.js';
+import { abrirReagendar, onReagendarFechaChange, guardarReagendamiento } from '../ui/admin/reagendar.js';
 import {
   abrirDisponibilidad, switchTab, toggleDia, toggleHr,
   addOcc, removeOcc, avMes,
-} from '../logic/Admin/disponibilidad.js';
-import { openPanel, closePanel, closePanelBg, toggleSidebar, activarNav } from '../ui/Admin/ui.js';
+} from '../logic/admin/disponibilidad.js';
+import { openPanel, closePanel, closePanelBg, toggleSidebar, activarNav } from '../ui/admin/ui.js';
 
 /* ── Exponer al scope global (requerido por onclick en el HTML) ── */
 Object.assign(window, {

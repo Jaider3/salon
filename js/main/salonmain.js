@@ -1,10 +1,10 @@
 // ── salonMain.js ───────────────────────────────────────
 // Entry point de la landing — inicializa datos y expone al window
 
-import { state } from '../logic/Salon/config.js';
-import { loadDisp, loadCitas } from '../logic/Salon/db.js';
-import { renderCal, cambiarMes, elegirDia, elegirHora } from '../ui/Salon/calendar.js';
-import { abrirModal, cerrarModal, cerrarFuera, irPaso } from '../ui/Salon/modal.js';
+import { state } from '../logic/salon/config.js';
+import { loadDisp, loadCitas } from '../logic/salon/db.js';
+import { renderCal, cambiarMes, elegirDia, elegirHora } from '../ui/salon/calendar.js';
+import { abrirModal, cerrarModal, cerrarFuera, irPaso } from '../ui/salon/modal.js';
 
 /* ── Init ── */
 async function inicializar() {

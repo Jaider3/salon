@@ -1,7 +1,7 @@
 // ── db.js ──────────────────────────────────────────────
 // Capa de acceso a Firestore
 
-import { db } from '../../services/DB.js';
+import { db } from '../../services/db.js';
 import {
   collection, doc,
   getDocs, setDoc,
