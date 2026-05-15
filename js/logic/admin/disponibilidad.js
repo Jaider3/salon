@@ -2,7 +2,7 @@
 // Editor de disponibilidad: calendario de días, horas base, bloqueos manuales
 
 import { state, EST_LBL, MESES } from './config.js';
-import { loadDisp, saveDisp } from '.dDb.js';
+import { loadDisp, saveDisp } from './db.js';
 import { openPanel, activarNav, showToast } from '../../ui/admin/ui.js';
 
 /* ── Abrir panel ── */
