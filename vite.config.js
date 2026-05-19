@@ -3,7 +3,7 @@ import { resolve } from 'path'
 import { viteStaticCopy } from 'vite-plugin-static-copy'
 
 export default defineConfig({
-  base: './', // Cambiamos a relativo para que se adapte a subcarpetas
+  base: '/', // Cambiamos a relativo para que se adapte a subcarpetas
   plugins: [
     viteStaticCopy({
       targets: [
