@@ -3,7 +3,15 @@
   "outputDirectory": "dist",
   "rewrites": [
     { "source": "/", "destination": "/pages/ux/index.html" },
-    { "source": "/admin", "destination": "/pages/admin/index.html" }
+    { "source": "/admin", "destination": "/pages/admin/index.html" },
+    {
+      "source": "/pages/ux/imgs/(.*)",
+      "destination": "/imgs/$1"
+    },
+    {
+      "source": "/pages/admin/imgs/(.*)",
+      "destination": "/imgs/$1"
+    }
   ],
   "cleanUrls": true,
   "trailingSlash": false,
@@ -16,16 +24,6 @@
           "value": "public, max-age=31536000, immutable"
         }
       ]
-    }
-  ],
-  "rewrites": [
-    {
-      "source": "/pages/ux/imgs/(.*)",
-      "destination": "/imgs/$1"
-    },
-    {
-      "source": "/pages/admin/imgs/(.*)",
-      "destination": "/imgs/$1"
     }
   ]
 }
