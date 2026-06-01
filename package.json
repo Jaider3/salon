@@ -14,5 +14,18 @@
   },
   "dependencies": {
     "firebase": "^12.13.0"
-  }
+  },
+  "description": "",
+  "main": "vite.config.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Jaider3/salon.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Jaider3/salon/issues"
+  },
+  "homepage": "https://github.com/Jaider3/salon#readme"
 }
