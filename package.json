@@ -13,7 +13,7 @@
     "vite-plugin-static-copy": "^4.1.0"
   },
   "dependencies": {
-    "firebase": "^12.13.0"
+    "firebase": "^12.14.0"
   },
   "description": "",
   "main": "vite.config.js",

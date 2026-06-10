@@ -1,356 +1,224 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Quedo IA — Tu agenda, siempre llena</title>
-  <meta name="description" content="Quedo automatiza tu agenda con WhatsApp e IA. Tu bot atiende, agenda y confirma citas 24/7 — para barberías y spas que no quieren perder más plata.">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,700;12..96,800&family=Outfit:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Panel de Pedidos — Qk</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <link rel="stylesheet" href="styles/style.css">
+  <link rel="icon" href="data:,">
 </head>
 <body>
 
-  <!-- Grain texture -->
-  <div class="grain" aria-hidden="true"></div>
-
-  <!-- ═══ NAV ═══ -->
-  <nav class="nav" id="nav">
-    <div class="nav-inner">
-      <a href="#" class="logo">
-        <span class="logo-mark">Q</span>uedo <span class="logo-mark">IA</span>
-      </a>
-      <div class="nav-links" id="nav-links">
-        <a href="#soluciones">Qué hacemos</a>
-        <a href="#proceso">Cómo funciona</a>
-        <a href="#para-quien">Para quién</a>
-        <a href="#propuesta">Propuesta</a>
-        <a href="#contacto" class="btn-nav">Hablemos →</a>
-      </div>
-      <button class="nav-toggle" id="nav-toggle" aria-label="Menú">
-        <span></span><span></span><span></span>
-      </button>
+<!-- ── TOPBAR ── -->
+<header class="topbar">
+  <div class="topbar-brand">
+    <div class="brand-icon">
+      <svg viewBox="0 0 20 20" fill="none"><rect x="2" y="2" width="7" height="7" rx="1.5" fill="#fff"/><rect x="11" y="2" width="7" height="7" rx="1.5" fill="#fff"/><rect x="2" y="11" width="7" height="7" rx="1.5" fill="#fff"/><rect x="11" y="11" width="7" height="7" rx="1.5" fill="#fff"/></svg>
     </div>
-  </nav>
+    <span class="brand-name">Qk · Pedidos</span>
+  </div>
+  <div class="topbar-right">
+    <button class="nav-btn active" data-section="pedidos">
+      <span class="label">Pedidos</span> 📋
+    </button>
+    <button class="nav-btn" data-section="comprobantes">
+      <span class="label">Comprobantes</span> 🧾
+    </button>
+    <button class="new-order-btn" id="btn-new-order">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      Nuevo pedido
+    </button>
+    <div class="live-indicator">
+      <span class="live-dot"></span>
+      <span>En vivo</span>
+    </div>
+  </div>
+</header>
 
-  <!-- ═══ HERO ═══ -->
-  <section class="hero" id="hero">
-    <div class="hero-orb orb-1" aria-hidden="true"></div>
-    <div class="hero-orb orb-2" aria-hidden="true"></div>
+<main class="page">
 
-    <div class="container hero-inner">
-      <!-- Copy -->
-      <div class="hero-copy">
-        <div class="pill reveal">Automatizaciones para tu negocio</div>
-        <h1 class="hero-h1 reveal delay-1">
-          <span>Deja de perder</span>
-          <em>citas y dinero</em>
-          <span>por no contestar.</span>
-        </h1>
-        <p class="hero-sub reveal delay-2">
-          Quedo IA conecta tu WhatsApp con inteligencia artificial para agendar, confirmar y recordar citas mientras trabajas.
-        </p>
-        <div class="hero-actions reveal delay-3">
-          <a href="#contacto" class="btn-lime">Hablemos</a>
-        </div>
-        <ul class="hero-trust reveal delay-4">
-          <li>✓ Sin instalaciones complicadas</li>
-          <li>✓ Listo en 48 horas</li>
-          <li>✓ Soporte incluido</li>
-        </ul>
+  <!-- ══ SECCIÓN PEDIDOS ══ -->
+  <div id="section-pedidos" class="section active">
+
+    <!-- Navegación de fecha -->
+    <div class="date-header">
+      <button class="date-nav-btn" id="btn-prev-day" title="Día anterior">‹</button>
+      <div class="date-label" id="date-label">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span id="date-text">Hoy</span>
       </div>
+      <button class="date-nav-btn" id="btn-next-day" title="Día siguiente">›</button>
+      <button class="date-today-btn" id="btn-today" style="display:none">← Hoy</button>
+    </div>
 
-      <!-- Phone mockup -->
-      <div class="phone-wrap reveal delay-2" aria-hidden="true">
-        <div class="phone">
-          <div class="phone-pill"></div>
-          <div class="wa-header">
-            <div class="wa-avatar">QB</div>
-            <div>
-              <div class="wa-name">Tu <strong>negocio</strong> 🤖</div>
-              <div class="wa-online">En línea</div>
-            </div>
-          </div>
-          <div class="wa-chat">
-            <div class="wa-date-chip">HOY</div>
-
-            <div class="wa-msg wa-out wa-1">
-              Hola, ¿hay turno mañana a las 3pm?
-              <span class="wa-ts">11:42</span>
-            </div>
-            <div class="wa-msg wa-in wa-2">
-              ¡Hola Carlos! Claro que sí 🙌<br>¿Qué servicio te gustaría?
-              <span class="wa-ts">11:42</span>
-            </div>
-            <div class="wa-msg wa-out wa-3">
-              Corte y barba por favor
-              <span class="wa-ts">11:43</span>
-            </div>
-            <div class="wa-typing wa-4">
-              <span></span><span></span><span></span>
-            </div>
-            <div class="wa-msg wa-in wa-5">
-              ✅ ¡Listo Carlos! Tu cita quedó para mañana a las 3:00 PM. ¡Te esperamos! 💈
-              <span class="wa-ts">11:43</span>
-            </div>
-          </div>
-          <div class="wa-inputbar">
-            <div class="wa-fake-input">Escribe un mensaje...</div>
-          </div>
+    <!-- KPIs -->
+    <div class="stats-grid">
+      <div class="stat-card pendiente">
+        <div class="stat-icon">⏳</div>
+        <div class="stat-info">
+          <div class="stat-label">Pendientes</div>
+          <div class="stat-num" id="stat-pendiente">—</div>
         </div>
-
-        <div class="float-badge float-left">
-          <span class="live-dot"></span> Bot activo 24/7
+      </div>
+      <div class="stat-card preparacion">
+        <div class="stat-icon">🍳</div>
+        <div class="stat-info">
+          <div class="stat-label">En preparación</div>
+          <div class="stat-num" id="stat-preparacion">—</div>
         </div>
-        <div class="float-badge float-right">
-          🎯 Cita confirmada
+      </div>
+      <div class="stat-card camino">
+        <div class="stat-icon">🛵</div>
+        <div class="stat-info">
+          <div class="stat-label">En camino</div>
+          <div class="stat-num" id="stat-camino">—</div>
+        </div>
+      </div>
+      <div class="stat-card entregado">
+        <div class="stat-icon">✅</div>
+        <div class="stat-info">
+          <div class="stat-label">Entregados</div>
+          <div class="stat-num" id="stat-entregado">—</div>
         </div>
       </div>
     </div>
-  </section>
 
-  <!-- ═══ EL PROBLEMA ═══ -->
-  <section class="section problema" id="problema">
-    <div class="container">
-      <div class="pill reveal">Lo que buscamos solucionar</div>
-      <h2 class="s-title reveal delay-1">¿Te suena familiar?</h2>
-      <p class="s-sub reveal delay-2">El 60% de los negocios de citas pierden al menos 3 turnos por semana por esto:</p>
-
-      <div class="pain-grid">
-        <div class="pain-card reveal">
-          <div class="pain-emoji">😤</div>
-          <p>Respondes mensajes 2 horas después porque no tuviste tiempo</p>
-        </div>
-        <div class="pain-card reveal delay-1">
-          <div class="pain-emoji">💸</div>
-          <p>Un cliente no llegó al turno, quedó el hueco y perdiste plata</p>
-        </div>
-        <div class="pain-card reveal delay-2">
-          <div class="pain-emoji">📱</div>
-          <p>Alguien preguntó disponibilidad, no le respondiste a tiempo y se fue a otro lugar</p>
-        </div>
-        <div class="pain-card reveal delay-3">
-          <div class="pain-emoji">📒</div>
-          <p>La agenda está en un cuaderno o en la cabeza y a veces los horarios se cruzan</p>
-        </div>
+    <!-- Toolbar -->
+    <div class="orders-toolbar">
+      <div class="orders-title">Pedidos del día</div>
+      <div class="toolbar-right">
+        <button class="filter-btn active" data-filter="todos">Todos</button>
+        <button class="filter-btn" data-filter="Pendiente">⏳ Pendiente</button>
+        <button class="filter-btn" data-filter="En preparación">🍳 Cocina</button>
+        <button class="filter-btn" data-filter="En camino">🛵 En camino</button>
+        <button class="filter-btn" data-filter="Entregado">✅ Entregados</button>
       </div>
     </div>
-  </section>
 
-  <!-- ═══ SOLUCIONES ═══ -->
-  <section class="section soluciones" id="soluciones">
-    <div class="container">
-      <div class="pill reveal">Te lo solucionamos</div>
-      <h2 class="s-title reveal delay-1">Quedo trabaja por vos</h2>
-      <p class="s-sub reveal delay-2">Un asistente que atiende, entiende y agenda sin que estés presente.</p>
-
-      <div class="feat-grid">
-        <div class="feat-card reveal">
-          <div class="feat-icon">🤖</div>
-          <h3>Bot 24/7 en WhatsApp</h3>
-          <p>Responde al instante a cualquier hora. No hay cliente sin atender, nunca más.</p>
-        </div>
-        <div class="feat-card reveal delay-1">
-          <div class="feat-icon">📅</div>
-          <h3>Agenda sin conflictos</h3>
-          <p>Sincronizado con Google Calendar. Jamás dos citas al mismo tiempo.</p>
-        </div>
-        <div class="feat-card reveal delay-2">
-          <div class="feat-icon">⏰</div>
-          <h3>Recordatorios automáticos</h3>
-          <p>Tu cliente recibe aviso antes de la cita. Los huecos bajan a casi cero.</p>
-        </div>
-        <div class="feat-card reveal delay-3">
-          <div class="feat-icon">🎤</div>
-          <h3>Entiende audios</h3>
-          <p>Tus clientes mandan audios en WhatsApp. El bot los procesa.</p>
-        </div>
-        <div class="feat-card reveal delay-4">
-          <div class="feat-icon">👤</div>
-          <h3>Memoria del cliente</h3>
-          <p>Sabe quién es, qué pidió antes y lo llama por su nombre. Sin volver a preguntar.</p>
-        </div>
-        <div class="feat-card reveal delay-5">
-          <div class="feat-icon">📊</div>
-          <h3>Registro en tiempo real</h3>
-          <p>Todas las citas, cancelaciones y cambios quedan en tu hoja de preferencia automáticamente.</p>
-        </div>
+    <div id="orders-list">
+      <div class="empty-state" id="loading-state">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+        <p>Conectando con Firebase...</p>
       </div>
     </div>
-  </section>
+  </div>
 
-  <!-- ═══ PROCESO ═══ -->
-  <section class="section proceso" id="proceso">
-    <div class="container">
-      <div class="pill reveal">El proceso</div>
-      <h2 class="s-title reveal delay-1">Tres pasos y listo</h2>
-
-      <div class="steps">
-        <div class="step reveal delay-1">
-          <div class="step-n">01</div>
-          <h3>Nos cuentas de tu negocio</h3>
-          <p>Servicios, precios, horarios y cómo querés que suene el bot. Una llamada de 30 min es todo lo que necesitamos.</p>
-        </div>
-        <div class="step-arr" aria-hidden="true">→</div>
-        <div class="step reveal delay-2">
-          <div class="step-n">02</div>
-          <h3>Conectamos todo</h3>
-          <p>WhatsApp, tu Google Calendar y tu hoja de registro. Nos encargamos de la parte técnica.</p>
-        </div>
-        <div class="step-arr" aria-hidden="true">→</div>
-        <div class="step reveal delay-3">
-          <div class="step-n">03</div>
-          <h3>Tu bot empieza a trabajar</h3>
-          <p>En 48 horas tu asistente está activo. Vos a cortar, a atender, a lo tuyo. El bot agenda solo.</p>
-        </div>
+  <!-- ══ SECCIÓN COMPROBANTES ══ -->
+  <div id="section-comprobantes" class="section">
+    <!-- Navegación de fecha comprobantes (comparte el mismo dayOffset que pedidos) -->
+    <div class="date-header">
+      <button class="date-nav-btn" id="proof-btn-prev-day" title="Día anterior">‹</button>
+      <div class="date-label">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <span id="proof-date-text">Hoy</span>
+      </div>
+      <button class="date-nav-btn" id="proof-btn-next-day" title="Día siguiente">›</button>
+      <button class="date-today-btn" id="proof-btn-today" style="display:none">← Hoy</button>
+    </div>
+    <div class="proof-header">
+      <div class="proof-title">Comprobantes de pago · domicilios</div>
+      <div class="proof-count" id="proof-count">0 comprobantes</div>
+    </div>
+    <div class="proof-grid" id="proof-grid">
+      <div class="empty-state">
+        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+        <p>Sin comprobantes aún</p>
       </div>
     </div>
-  </section>
+  </div>
 
-  <!-- ═══ PARA QUIÉN ═══ -->
-  <section class="section para-quien" id="para-quien">
-    <div class="container">
-      <div class="pill reveal">Para quién es</div>
-      <h2 class="s-title reveal delay-1">Hecho para negocios de citas</h2>
+</main>
 
-      <div class="audience-grid">
-        <div class="aud-card aud-barber reveal">
-          <div class="aud-icon">💈</div>
-          <h3>Barberías</h3>
-          <ul>
-            <li>Turnos cortos, muchos clientes al día</li>
-            <li>Imposible estar en el teléfono mientras cortás</li>
-            <li>Clientes que piden turno por audio o mensaje casual</li>
-            <li>Necesitás agenda digital sin complicarte la vida</li>
-          </ul>
-        </div>
-        <div class="aud-card aud-spa reveal delay-1">
-          <div class="aud-icon">🌿</div>
-          <h3>Spas y Salones</h3>
-          <ul>
-            <li>Citas más largas, agenda más ajustada</li>
-            <li>Confirmar antes de llegar es clave para no perder el turno</li>
-            <li>Varios servicios con duraciones distintas</li>
-            <li>Necesitás que el cliente confirme y no se te arme el caos</li>
-          </ul>
-        </div>
-      </div>
-      <div class="aud-card delay-2">
-        <h3>Otros</h3>
-        <ul>
-            <li>Si tu negocio trabaja con citas o reservas conctáctanos también, trabajaremos en una propuesta a la medida para tí</li>
-        </ul>
-      </div>
+<!-- ══ MODAL DETALLE PEDIDO ══ -->
+<div class="modal-overlay" id="modal-overlay">
+  <div class="modal" id="modal">
+    <div class="modal-header">
+      <div class="modal-title" id="modal-title">Pedido #000</div>
+      <button class="modal-close" id="modal-close">✕</button>
     </div>
-  </section>
+    <div class="modal-body" id="modal-body"></div>
+  </div>
+</div>
 
-  <!-- ═══ NÚMEROS ═══ -->
-  <section class="section numeros" id="numeros">
-    <div class="container">
-      <div class="stats-wrap">
-        <div class="stat reveal">
-          <div class="stat-row">
-            <span class="stat-num" data-target="100">100</span><span class="stat-sfx">%</span>
-          </div>
-          <p>de atención, incluso cuando estás ocupado atendiendo</p>
-        </div>
-        <div class="stat-div" aria-hidden="true"></div>
-        <div class="stat reveal delay-1">
-          <div class="stat-row">
-            <span class="stat-num" data-target="24">24</span><span class="stat-sfx">/7</span>
-          </div>
-          <p>horas activo, sin vacaciones ni descansos</p>
-        </div>
-        <div class="stat-div" aria-hidden="true"></div>
-        <div class="stat reveal delay-2">
-          <div class="stat-row">
-            <span class="stat-num" data-target="80">80</span><span class="stat-sfx">%</span>
-          </div>
-          <p>menos tiempo respondiendo mensajes manualmente</p>
-        </div>
-        <div class="stat-div" aria-hidden="true"></div>
-        <div class="stat reveal delay-3">
-          <div class="stat-row">
-            <span class="stat-num" data-target="48">48</span><span class="stat-sfx">h</span>
-          </div>
-          <p>para tener tu bot listo y funcionando en tu negocio</p>
-        </div>
-      </div>
+<!-- ══ MODAL NUEVO PEDIDO ══ -->
+<div class="modal-overlay" id="new-modal-overlay">
+  <div class="modal" id="new-modal" style="max-width:480px">
+    <div class="modal-header">
+      <div class="modal-title">Nuevo pedido manual</div>
+      <button class="modal-close" id="new-modal-close">✕</button>
     </div>
-  </section>
+    <div class="modal-body">
 
-  <!-- ═══ CONTACTO ═══ -->
-  <section class="section contacto" id="contacto">
-    <div class="container contacto-inner">
-      <div class="contacto-copy reveal">
-        <div class="pill">Contacto</div>
-        <h2 class="s-title">Hablemos.</h2>
-        <p>Cuéntanos de tu negocio y te armamos una propuesta a medida. Sin compromiso, sin tecnicismos.</p>
-        <div class="contacto-meta">
-          <span>📍 Medellín, Colombia</span>
-          <span>⚡ Respondemos en menos de 24h</span>
-          <span>🔒 Tus datos no van a ningún lado</span>
+      <!-- Tipo de pedido -->
+      <div class="form-group">
+        <label class="form-label">Tipo de pedido <span>*</span></label>
+        <div class="tipo-selector">
+          <button type="button" class="tipo-opt" data-tipo="tienda">
+            <span class="tipo-opt-icon">🍽️</span>
+            <span>En tienda</span>
+          </button>
+          <button type="button" class="tipo-opt" data-tipo="domicilio">
+            <span class="tipo-opt-icon">🛵</span>
+            <span>Domicilio</span>
+          </button>
         </div>
+        <input type="hidden" id="new-tipo" value="" />
       </div>
 
-      <!-- Para conectar el formulario con un backend real, usá Formspree:
-           1. Crear cuenta en formspree.io (gratis)
-           2. Crear nuevo formulario → obtener endpoint
-           3. Agregar action="https://formspree.io/f/TU_ID" al <form>
-      -->
-      <form class="form reveal delay-1" id="contacto-form" method="POST" action="https://formspree.io/f/mpqngnja">
-        <div class="form-row">
-          <div class="form-group">
-            <label for="nombre">Tu nombre</label>
-            <input type="text" id="nombre" name="nombre" placeholder="Ej: Camilo Roldán" required>
-          </div>
-          <div class="form-group">
-            <label for="wapp">WhatsApp</label>
-            <input type="tel" id="wapp" name="whatsapp" placeholder="Ej: 300 123 4567" required>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="negocio">Tipo de negocio</label>
-          <select id="negocio" name="negocio" required>
-            <option value="" disabled selected>Selecciona tu tipo de negocio</option>
-            <option value="barberia">Barbería</option>
-            <option value="spa">Spa</option>
-            <option value="salon">Salón de belleza</option>
-            <option value="estetica">Centro de estética</option>
-            <option value="otro">Otro</option>
-          </select>
-        </div>
-        <div class="form-group">
-          <label for="mensaje">¿Algo que quieras contarnos? <span class="opt">(opcional)</span></label>
-          <textarea id="mensaje" name="mensaje" rows="4"
-            placeholder="Ej: Tengo una barbería con 2 sillas, llevo la agenda en WhatsApp de forma manual..."></textarea>
-        </div>
-        <button type="submit" class="btn-lime btn-submit">
-          Quiero automatizar mi negocio →
-        </button>
-        <div class="form-ok" id="form-ok">
-          ✅ ¡Recibido! Te contactamos en las próximas horas.
-        </div>
-      </form>
-    </div>
-  </section>
+      <div class="form-group">
+        <label class="form-label" for="new-nombre">Nombre del cliente <span>*</span></label>
+        <input class="form-input" type="text" id="new-nombre" placeholder="Ej: Carlos Mendoza" autocomplete="off" />
+      </div>
 
-  <!-- ═══ FOOTER ═══ -->
-  <footer class="footer">
-    <div class="container footer-inner">
-      <a href="#" class="logo footer-logo">
-        <span class="logo-mark">Q</span>uedo<span class="logo-mark">IA</span>
-      </a>
-      <p class="footer-copy">© 2026 Quedo. Automatización de citas para barberías y spas. Medellín, Colombia.</p>
-      <nav class="footer-links" aria-label="Footer nav">
-        <a href="#soluciones">Servicios</a>
-        <a href="#propuesta">Propuesta</a>
-        <a href="#contacto">Contacto</a>
-      </nav>
-    </div>
-  </footer>
+      <div class="form-group">
+        <label class="form-label" for="new-telefono">Teléfono</label>
+        <input class="form-input" type="tel" id="new-telefono" placeholder="+57 300 123 4567" />
+      </div>
 
-  
+      <div class="form-group" id="new-direccion-group">
+        <label class="form-label" for="new-direccion">Dirección de entrega <span>*</span></label>
+        <input class="form-input" type="text" id="new-direccion" placeholder="Cra 70 #45-12, Laureles" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="new-pedido">Pedido <span>*</span></label>
+        <textarea class="form-textarea" id="new-pedido" placeholder="Ej: 2 hamburguesas clásicas + papas medianas"></textarea>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="new-obs">Observaciones</label>
+        <input class="form-input" type="text" id="new-obs" placeholder="Ej: sin cebolla, alergia..." />
+      </div>
+
+      <div class="form-footer">
+        <button class="btn-secondary" id="new-modal-cancel">Cancelar</button>
+        <button class="btn-primary" id="new-modal-submit" disabled>Crear pedido</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ══ LIGHTBOX ══ -->
+<div class="lightbox" id="lightbox">
+  <button class="lightbox-close" id="lightbox-close">✕</button>
+  <img id="lightbox-img" src="" alt="Comprobante" />
+  <div class="lightbox-caption" id="lightbox-caption"></div>
+</div>
+
+<!-- ── TOAST ── -->
+<div id="toast">
+  <span class="t-icon">
+    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+  </span>
+  <span id="toast-msg">Listo</span>
+</div>
+
+<script type="module" src="main.js"></script>
 </body>
 </html>
