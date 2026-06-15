@@ -33,10 +33,6 @@
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       Nuevo pedido
     </button>
-    <div class="live-indicator">
-      <span class="live-dot"></span>
-      <span>En vivo</span>
-    </div>
   </div>
 </header>
 
@@ -193,6 +189,30 @@
       <div class="form-group">
         <label class="form-label" for="new-obs">Observaciones</label>
         <input class="form-input" type="text" id="new-obs" placeholder="Ej: sin cebolla, alergia..." />
+      </div>
+
+      <!-- ── CAMPOS DE PAGO ── -->
+      <div class="form-group">
+        <label class="form-label" for="new-tipoPago">Tipo de pago</label>
+        <select class="form-input form-select" id="new-tipoPago">
+          <option value="">— Seleccionar —</option>
+          <option value="efectivo">💵 Efectivo</option>
+          <option value="transferencia">📲 Transferencia</option>
+          <option value="tarjeta">💳 Tarjeta</option>
+          <option value="nequi">🟣 Nequi</option>
+          <option value="daviplata">🔴 Daviplata</option>
+        </select>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group" style="flex:1">
+          <label class="form-label" for="new-monto">Monto recibido</label>
+          <input class="form-input" type="number" id="new-monto" placeholder="0" min="0" step="100" />
+        </div>
+        <div class="form-group" style="flex:1">
+          <label class="form-label" for="new-total">Total del pedido</label>
+          <input class="form-input" type="number" id="new-total" placeholder="0" min="0" step="100" />
+        </div>
       </div>
 
       <div class="form-footer">
