@@ -115,13 +115,15 @@ let allOrders   = [];
 let filterMode  = "todos";
 let dayOffset   = 0;
 let db;
+let storage;
 let unsubscribe = null;
 
 /* ─── INIT ─── */
 function initFirebase() {
   try {
     firebase.initializeApp(firebaseConfig);
-    db = firebase.firestore();
+    db      = firebase.firestore();
+    storage = firebase.storage();
     subscribeToOrders();
   } catch (err) {
     console.warn("Firebase no configurado — modo demo:", err.message);
@@ -587,10 +589,15 @@ document.getElementById("modal-overlay").addEventListener("click", e => {
 /* ══════════════════════════════════════════
    MODAL NUEVO PEDIDO MANUAL
 ══════════════════════════════════════════ */
-let newTipo = "";
+let newTipo          = "";
+let pendingImageFile = null;   // File seleccionado, aún no subido
+let uploadedImageUrl = "";     // URL definitiva en Storage (se rellena al guardar)
 
 function openNewModal() {
-  newTipo = "";
+  newTipo          = "";
+  pendingImageFile = null;
+  uploadedImageUrl = "";
+
   document.getElementById("new-tipo").value        = "";
   document.getElementById("new-nombre").value      = "";
   document.getElementById("new-telefono").value    = "";
@@ -600,14 +607,102 @@ function openNewModal() {
   document.getElementById("new-tipoPago").value    = "";
   document.getElementById("new-monto").value       = "";
   document.getElementById("new-total").value       = "";
+  document.getElementById("new-comprobante").value = "";
+
   document.querySelectorAll(".tipo-opt").forEach(b => b.className = "tipo-opt");
   document.getElementById("new-direccion-group").classList.add("hidden");
   document.getElementById("new-modal-submit").disabled = true;
+
+  // Reset upload UI
+  setUploadState("idle");
+
   document.getElementById("new-modal-overlay").classList.add("open");
 }
 
 function closeNewModal() {
   document.getElementById("new-modal-overlay").classList.remove("open");
+}
+
+/** Controla qué panel de la zona de upload se muestra */
+function setUploadState(state, progress) {
+  const placeholder = document.getElementById("upload-placeholder");
+  const preview     = document.getElementById("upload-preview");
+  const progBar     = document.getElementById("upload-progress");
+
+  placeholder.style.display = state === "idle"     ? "flex"   : "none";
+  preview.style.display     = state === "preview"  ? "block"  : "none";
+  progBar.style.display     = state === "uploading"? "flex"   : "none";
+
+  if (state === "uploading" && progress != null) {
+    document.getElementById("upload-progress-bar").style.width   = `${progress}%`;
+    document.getElementById("upload-progress-label").textContent = `Subiendo… ${Math.round(progress)}%`;
+  }
+}
+
+/* ── Click en zona de upload → abre file picker ── */
+document.getElementById("upload-area").addEventListener("click", e => {
+  if (e.target.id === "upload-remove") return;   // manejado abajo
+  if (pendingImageFile) return;                  // ya hay imagen seleccionada
+  document.getElementById("new-comprobante").click();
+});
+
+/* ── Archivo seleccionado ── */
+document.getElementById("new-comprobante").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  if (file.size > 5 * 1024 * 1024) {
+    showToast("La imagen supera los 5 MB");
+    e.target.value = "";
+    return;
+  }
+
+  pendingImageFile = file;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    document.getElementById("upload-preview-img").src = ev.target.result;
+    setUploadState("preview");
+  };
+  reader.readAsDataURL(file);
+});
+
+/* ── Quitar imagen seleccionada ── */
+document.getElementById("upload-remove").addEventListener("click", e => {
+  e.stopPropagation();
+  pendingImageFile = null;
+  uploadedImageUrl = "";
+  document.getElementById("new-comprobante").value = "";
+  document.getElementById("upload-preview-img").src = "";
+  setUploadState("idle");
+});
+
+/**
+ * Sube la imagen a Firebase Storage y devuelve la URL pública.
+ * Muestra barra de progreso mientras sube.
+ */
+function uploadComprobante(file, pedidoNum) {
+  return new Promise((resolve, reject) => {
+    if (!storage) { resolve(""); return; }
+
+    const ext  = file.name.split(".").pop() || "jpg";
+    const path = `comprobantes/${pedidoNum}_${Date.now()}.${ext}`;
+    const ref  = storage.ref(path);
+    const task = ref.put(file);
+
+    setUploadState("uploading", 0);
+
+    task.on("state_changed",
+      snap => {
+        const pct = (snap.bytesTransferred / snap.totalBytes) * 100;
+        setUploadState("uploading", pct);
+      },
+      err => reject(err),
+      async () => {
+        const url = await task.snapshot.ref.getDownloadURL();
+        resolve(url);
+      }
+    );
+  });
 }
 
 // Tipo de pedido — selector
@@ -634,9 +729,9 @@ document.querySelectorAll(".tipo-opt").forEach(btn => {
 });
 
 function validateNewForm() {
-  const nombre  = document.getElementById("new-nombre").value.trim();
-  const pedido  = document.getElementById("new-pedido").value.trim();
-  const dir     = document.getElementById("new-direccion").value.trim();
+  const nombre = document.getElementById("new-nombre").value.trim();
+  const pedido = document.getElementById("new-pedido").value.trim();
+  const dir    = document.getElementById("new-direccion").value.trim();
   const ok = newTipo !== "" && nombre !== "" && pedido !== "" &&
              (newTipo !== "domicilio" || dir !== "");
   document.getElementById("new-modal-submit").disabled = !ok;
@@ -663,11 +758,23 @@ document.getElementById("new-modal-submit").addEventListener("click", async () =
   const montoRaw = document.getElementById("new-monto").value;
   const totalRaw = document.getElementById("new-total").value;
 
-  // Convertir a enteros (int64 en Firestore); null si vacío
   const monto = montoRaw !== "" ? parseInt(montoRaw, 10) : null;
   const total = totalRaw !== "" ? parseInt(totalRaw, 10) : null;
 
   const newNum = String(allOrders.length + 1).padStart(3, "0");
+
+  // ── Subir imagen si hay una pendiente ──
+  let comprobanteUrl = "";
+  if (pendingImageFile) {
+    try {
+      btn.textContent = "Subiendo imagen…";
+      comprobanteUrl = await uploadComprobante(pendingImageFile, newNum);
+    } catch (err) {
+      console.error("Error subiendo imagen:", err);
+      showToast("Error al subir la imagen — pedido sin comprobante");
+      comprobanteUrl = "";
+    }
+  }
 
   const newOrder = {
     num:           newNum,
@@ -680,12 +787,13 @@ document.getElementById("new-modal-submit").addEventListener("click", async () =
     estado:        "Pendiente",
     tipo:          newTipo,
     origen:        "manual",
-    comprobante:   "",
+    comprobante:   comprobanteUrl,
     tipoPago:      tipoPago,
     monto:         monto,
     total:         total
   };
 
+  // Modo demo
   if (!db || allOrders.some(o => o.id.startsWith("demo-"))) {
     newOrder.id = `demo-${Date.now()}`;
     allOrders.unshift(newOrder);
@@ -696,7 +804,7 @@ document.getElementById("new-modal-submit").addEventListener("click", async () =
   }
 
   try {
-    // Construir objeto para Firestore (omitir nulls para no pisar campos existentes)
+    btn.textContent = "Guardando…";
     const firestoreDoc = {
       num:           newOrder.num,
       nombreCliente: newOrder.nombreCliente,
@@ -708,7 +816,7 @@ document.getElementById("new-modal-submit").addEventListener("click", async () =
       estado:        newOrder.estado,
       tipo:          newOrder.tipo,
       origen:        newOrder.origen,
-      comprobante:   newOrder.comprobante,
+      comprobante:   comprobanteUrl,
       tipoPago:      newOrder.tipoPago
     };
     if (monto !== null) firestoreDoc.monto = monto;
