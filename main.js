@@ -11,77 +11,6 @@ const firebaseConfig = {
   measurementId: "G-HQDVKEQ9XT"
 };
 
-/* ══════════════════════════════════════════
-   PEDIDOS DEMO
-   Estructura exacta que Firestore recibe
-══════════════════════════════════════════ */
-const DEMO_ORDERS = [
-  {
-    num:           "001",
-    nombreCliente: "Carlos Mendoza",
-    telefono:      "+57 310 456 7890",
-    direccion:     "Cra 70 #45-12, Laureles",
-    pedido:        "2 Hamburguesas clásicas + Papas medianas + 2 Gaseosas",
-    observaciones: "Sin cebolla en una hamburguesa",
-    fecha:         new Date(Date.now() - 5 * 60000),
-    estado:        "Pendiente",
-    tipo:          "domicilio",
-    origen:        "whatsapp",
-    comprobante:   "https://images.unsplash.com/photo-1563013544-824ae1b704d3?w=500&q=80",
-    tipoPago:      "nequi",
-    monto:         50000,
-    total:         47500
-  },
-  {
-    num:           "002",
-    nombreCliente: "Valentina Torres",
-    telefono:      "+57 320 987 6543",
-    direccion:     "",
-    pedido:        "Perro caliente tradicional + Gaseosa grande",
-    observaciones: "Mesa 4",
-    fecha:         new Date(Date.now() - 18 * 60000),
-    estado:        "En preparación",
-    tipo:          "tienda",
-    origen:        "manual",
-    comprobante:   "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=500&q=80",
-    tipoPago:      "efectivo",
-    monto:         20000,
-    total:         18000
-  },
-  {
-    num:           "003",
-    nombreCliente: "Melissa Vargas",
-    telefono:      "+57 315 667 8899",
-    direccion:     "Cra 43A #14-190, El Estadio",
-    pedido:        "Hamburguesa doble carne + Papas fritas + Malteada",
-    observaciones: "Alérgica al gluten",
-    fecha:         new Date(Date.now() - 55 * 60000),
-    estado:        "Entregado",
-    tipo:          "domicilio",
-    origen:        "whatsapp",
-    comprobante:   "",
-    tipoPago:      "transferencia",
-    monto:         35000,
-    total:         35000
-  },
-  {
-    num:           "004",
-    nombreCliente: "Juan Pablo Herrera",
-    telefono:      "+57 304 321 9876",
-    direccion:     "",
-    pedido:        "3 Hamburguesas BBQ + 3 Papas + 3 Limonadas",
-    observaciones: "Todo con salsa extra",
-    fecha:         new Date(Date.now() - 8 * 60000),
-    estado:        "Pendiente",
-    tipo:          "tienda",
-    origen:        "manual",
-    comprobante:   "",
-    tipoPago:      "tarjeta",
-    monto:         90000,
-    total:         88000
-  }
-];
-
 /* ═══════════════════════════════════════════════════════════
    ZONA HORARIA: Colombia GMT-5
 ═══════════════════════════════════════════════════════════ */
@@ -148,9 +77,6 @@ function subscribeToOrders() {
     .where("fecha", "<",  endOfDay)
     .orderBy("fecha", "desc")
     .onSnapshot(async snap => {
-      if (snap.empty && dayOffset === 0) {
-        await seedDemoOrders(); return;
-      }
       allOrders = snap.docs.map(doc => {
         const data = doc.data();
         return {
@@ -177,26 +103,6 @@ function subscribeToOrders() {
     }, err => { console.error(err); runLocalDemo(); });
 }
 
-async function seedDemoOrders() {
-  const batch = db.batch();
-  DEMO_ORDERS.forEach(o => {
-    const ref = db.collection("pedidos").doc();
-    batch.set(ref, {
-      ...o,
-      fecha: firebase.firestore.Timestamp.fromDate(o.fecha)
-    });
-  });
-  await batch.commit();
-}
-
-function runLocalDemo() {
-  const refDate = colDayOffset(dayOffset);
-  allOrders = DEMO_ORDERS
-    .map((o, i) => ({ id: `demo-${i}`, ...o }))
-    .filter(o => sameColDay(o.fecha, refDate));
-  renderAll();
-  hideLoading();
-}
 
 function generateNum(doc) {
   return (doc.id.charCodeAt(0) % 900 + 100).toString().padStart(3, "0");
@@ -909,6 +815,7 @@ document.querySelectorAll(".nav-btn").forEach(btn => {
     btn.classList.add("active");
     document.querySelectorAll(".section").forEach(s => s.classList.remove("active"));
     document.getElementById(`section-${btn.dataset.section}`).classList.add("active");
+    if (btn.dataset.section === "disponibilidad" && db) loadDisponibilidad();
   });
 });
 
@@ -946,6 +853,35 @@ function showToast(msg) {
   t.classList.add("show");
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => t.classList.remove("show"), 2800);
+}
+
+/* ─── DISPONIBILIDAD ─── */
+function loadDisponibilidad() {
+  db.collection("config").doc("disponibilidad")
+    .onSnapshot(snap => {
+      const data = snap.data() || {};
+      const items = Object.entries(data).sort((a, b) => a[0].localeCompare(b[0]));
+      const grid = document.getElementById("disp-grid");
+      document.getElementById("disp-count").textContent =
+        `${items.filter(([,v]) => v).length} / ${items.length} disponibles`;
+
+      grid.innerHTML = items.map(([nombre, disponible]) => `
+        <div class="disp-item ${disponible ? "disponible" : "agotado"}"
+             data-key="${esc(nombre)}">
+          <span class="disp-item-name">${esc(nombre)}</span>
+          <button class="disp-toggle" title="${disponible ? "Marcar agotado" : "Marcar disponible"}"></button>
+        </div>`).join("");
+
+      grid.querySelectorAll(".disp-item").forEach(el => {
+        el.addEventListener("click", () => {
+          const key = el.dataset.key;
+          const current = el.classList.contains("disponible");
+          db.collection("config").doc("disponibilidad")
+            .update({ [key]: !current })
+            .catch(() => showToast("Error al actualizar"));
+        });
+      });
+    });
 }
 
 /* ─── ARRANQUE ─── */
