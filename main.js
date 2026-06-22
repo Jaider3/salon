@@ -857,6 +857,16 @@ function showToast(msg) {
 
 /* ─── DISPONIBILIDAD ─── */
 function loadDisponibilidad() {
+  const displayNames = {
+    "familiar":              "Picada Familiar",
+    "papas":                 "Adición de Papas",
+    "canon":                 "Cañón",
+    "familiar grande":       "Picada Familiar Grande",
+    "familiar grande mixta": "Picada Familiar Grande Mixta",
+    "medio canon":           "Media de Cañón",
+    "pequena":               "Picada Pequeña"
+  };
+
   db.collection("config").doc("disponibilidad")
     .onSnapshot(snap => {
       const data = snap.data() || {};
@@ -865,12 +875,15 @@ function loadDisponibilidad() {
       document.getElementById("disp-count").textContent =
         `${items.filter(([,v]) => v).length} / ${items.length} disponibles`;
 
-      grid.innerHTML = items.map(([nombre, disponible]) => `
-        <div class="disp-item ${disponible ? "disponible" : "agotado"}"
-             data-key="${esc(nombre)}">
-          <span class="disp-item-name">${esc(nombre)}</span>
-          <button class="disp-toggle" title="${disponible ? "Marcar agotado" : "Marcar disponible"}"></button>
-        </div>`).join("");
+      grid.innerHTML = items.map(([nombre, disponible]) => {
+        const label = displayNames[nombre] || nombre.charAt(0).toUpperCase() + nombre.slice(1);
+        return `
+          <div class="disp-item ${disponible ? "disponible" : "agotado"}"
+               data-key="${esc(nombre)}">
+            <span class="disp-item-name">${esc(label)}</span>
+            <button class="disp-toggle" title="${disponible ? "Marcar agotado" : "Marcar disponible"}"></button>
+          </div>`;
+      }).join("");
 
       grid.querySelectorAll(".disp-item").forEach(el => {
         el.addEventListener("click", () => {
@@ -883,7 +896,6 @@ function loadDisponibilidad() {
       });
     });
 }
-
 /* ─── ARRANQUE ─── */
 updateDateLabel();
 initFirebase();
